@@ -4,7 +4,7 @@ const csv = require('csv-parser');
 let dataSet = {};
 let types = {};
 
-fs.createReadStream('../data/test-contacts.csv')
+fs.createReadStream('./data/contacts.csv')
     .pipe(csv())
     .on('headers', setHeaders)
     .on('data', flatten)
