@@ -9,9 +9,9 @@ fs.createReadStream('./data/contacts.csv')
     .on('headers', setHeaders)
     .on('data', flatten)
     .on('end', function (data) {
-        identifyDateType(dataSet);
-        checkForMc(dataSet);
-        checkForText(dataSet);
+        cycle(dataSet, identifyDateType);
+        cycle(dataSet, checkForMc);
+        cycle(dataSet, checkForText);
         console.log(types);
     });
 
@@ -30,47 +30,47 @@ function flatten (data) {
     }
 }
 
-function identifyDateType (data) {
-    for (category in data) {
-        var x = 0;
-        data[category].forEach(function(item) {
-            if (new Date(item).toString() !== 'Invalid Date') {
-                x++;
-            }
-        });
-        if (x > data[category].length/2) {
-            types[category] = {type: 'Date/Time' };
+function identifyDateType (data, category) {
+    var x = 0;
+    data[category].forEach(function(item) {
+        if (new Date(item).toString() !== 'Invalid Date') {
+            x++;
         }
+    });
+    if (x > data[category].length/2) {
+        types[category] = {type: 'Date/Time' };
     }
 }
 
-function checkForText (data) {
-    for (category in data) {
-        let stringCount = 0;
-        data[category].forEach(function(item) {
-            if (typeof data[item] === 'string' && data[item].match(/"^[a-zA-Z0-9_]*$"/)) {
-                stringCount++;
-            }
-        });
-        if (stringCount < data[category].length/2 && types[category] === undefined) {
-            types[category] = { type: 'Text'};
+function checkForText (data, category) {
+    let stringCount = 0;
+    data[category].forEach(function(item) {
+        if (typeof data[item] === 'string' && data[item].match(/"^[a-zA-Z0-9_]*$"/)) {
+            stringCount++;
         }
+    });
+    if (stringCount < data[category].length/2 && types[category] === undefined) {
+        types[category] = { type: 'Text'};
     }
 }
 
-function checkForMc (data) {
-    for (category in data) {
-        let options = {};
-        data[category].forEach(function(item) {
-            if (options[item]) {
-                options[item]++;
-            } else {
-                options[item] = 1;
-            }
-        });
-        if (Object.keys(options).length < data[category].length/2 && types[category] === undefined) {
-            types[category] = { type: 'Multiple Choice', options: Object.keys(options)};
+function checkForMc (data, category) {
+    let options = {};
+    data[category].forEach(function(item) {
+        if (options[item]) {
+            options[item]++;
+        } else {
+            options[item] = 1;
         }
+    });
+    if (Object.keys(options).length < data[category].length/2 && types[category] === undefined) {
+        types[category] = { type: 'Multiple Choice', options: Object.keys(options)};
+    }
+}
+
+function cycle (data, fxn) {
+    for (i in data) {
+        fxn(data, i);
     }
 }
  
